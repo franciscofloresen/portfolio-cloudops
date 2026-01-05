@@ -5,10 +5,10 @@ node_modules
 dist
 
 # Terraform
-infra/.terraform
-infra/*.tfstate
-infra/*.tfstate.backup
-infra/.terraform.lock.hcl
+**/.terraform
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
 
 # System
 .DS_Store

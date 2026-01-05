@@ -5,10 +5,22 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket         = "portfolio-ffe-tfstate"
+    key            = "portfolio/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "portfolio-tflock"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
   region = "us-east-1"
+}
+
+variable "alert_email" {
+  default = "franciscofloresenr@gmail.com"
 }
 
 locals {
@@ -140,4 +152,53 @@ output "github_actions_access_key_id" {
 output "github_actions_secret_access_key" {
   value     = aws_iam_access_key.github_actions.secret
   sensitive = true
+}
+
+# SNS Topic for alerts
+resource "aws_sns_topic" "alerts" {
+  name = "portfolio-alerts"
+}
+
+resource "aws_sns_topic_subscription" "email" {
+  topic_arn = aws_sns_topic.alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+# CloudWatch Alarm - 5xx errors
+resource "aws_cloudwatch_metric_alarm" "cf_5xx" {
+  alarm_name          = "portfolio-5xx-errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "5xxErrorRate"
+  namespace           = "AWS/CloudFront"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 5
+  alarm_description   = "CloudFront 5xx error rate > 5%"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+
+  dimensions = {
+    DistributionId = aws_cloudfront_distribution.cdn.id
+    Region         = "Global"
+  }
+}
+
+# CloudWatch Alarm - 4xx errors
+resource "aws_cloudwatch_metric_alarm" "cf_4xx" {
+  alarm_name          = "portfolio-4xx-errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "4xxErrorRate"
+  namespace           = "AWS/CloudFront"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 15
+  alarm_description   = "CloudFront 4xx error rate > 15%"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+
+  dimensions = {
+    DistributionId = aws_cloudfront_distribution.cdn.id
+    Region         = "Global"
+  }
 }

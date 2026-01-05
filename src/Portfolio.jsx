@@ -26,7 +26,7 @@ const profile = {
     title: "Cloud System Engineer Associate",
     subtitle: "CloudOps | AWS | Linux Administration",
     summary: "Cloud System Engineer Associate with hands-on experience in AWS cloud operations, Linux administration, monitoring, and IaC. Specialized in maintaining high-availability environments, executing operational runbooks, and resolving incidents.",
-    email: "franciscofloresenriquez2001@gmail.com",
+    email: "franciscofloresenr@gmail.com",
     linkedin: "https://www.linkedin.com/in/francisco-flores-89230b25b/",
     github: "https://github.com/franciscofloresen",
     location: "Tlaquepaque, Jalisco / Remote"
