@@ -1,5 +1,18 @@
+# Dependencies
 node_modules
+
+# Build
 dist
+
+# Terraform
+infra/.terraform
+infra/*.tfstate
+infra/*.tfstate.backup
+infra/.terraform.lock.hcl
+
+# System
 .DS_Store
-*.local
+
+# Environment
 .env
+*.local
