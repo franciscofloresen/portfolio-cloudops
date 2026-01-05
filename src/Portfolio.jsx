@@ -84,11 +84,11 @@ const projects = [
         type: "Serverless Architecture"
     },
     {
-        title: "Serverless Portfolio with AI",
-        tech: ["AWS Amplify", "Python", "OpenAI API", "React"],
-        desc: "Managed full lifecycle of an Amplify-hosted application. Integrated Python Lambda functions with OpenAI API for an intelligent chatbot.",
-        link: "https://main.dd5vs7yyk3xwx.amplifyapp.com",
-        type: "Full Stack Cloud"
+        title: "CloudOps Portfolio",
+        tech: ["Terraform", "S3", "CloudFront", "GitHub Actions", "React"],
+        desc: "This portfolio site. Serverless architecture with IaC, CI/CD pipeline, CloudWatch monitoring, and budget alerts. Follows AWS Well-Architected principles.",
+        link: "https://d271kptnjzshy6.cloudfront.net",
+        type: "Infrastructure as Code"
     },
     {
         title: "Snake Game in C",
