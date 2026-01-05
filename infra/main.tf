@@ -184,7 +184,30 @@ resource "aws_cloudwatch_metric_alarm" "cf_5xx" {
   }
 }
 
-# CloudWatch Alarm - 4xx errors
+# Budget Alert
+resource "aws_budgets_budget" "monthly" {
+  name         = "portfolio-monthly-budget"
+  budget_type  = "COST"
+  limit_amount = "20"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 80
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "FORECASTED"
+    subscriber_email_addresses = [var.alert_email]
+  }
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 100
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = [var.alert_email]
+  }
+}
 resource "aws_cloudwatch_metric_alarm" "cf_4xx" {
   alarm_name          = "portfolio-4xx-errors"
   comparison_operator = "GreaterThanThreshold"

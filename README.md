@@ -1,6 +1,10 @@
-# Portfolio Deployment Plan
+# Portfolio CloudOps - Francisco Flores
 
-## Arquitectura: S3 + CloudFront (100% Free Tier Eligible)
+Portfolio personal desplegado con arquitectura serverless en AWS.
+
+**URL:** https://d271kptnjzshy6.cloudfront.net
+
+## Arquitectura
 
 ```
 GitHub Actions (CI/CD)
@@ -15,41 +19,61 @@ GitHub Actions (CI/CD)
          Usuario Final
 ```
 
-## AWS Well-Architected Alignment
+## Stack Tecnológico
+
+| Capa | Tecnología |
+|------|------------|
+| Frontend | React + Vite + Tailwind CSS |
+| Hosting | S3 (privado) + CloudFront |
+| IaC | Terraform (backend remoto en S3) |
+| CI/CD | GitHub Actions |
+| Monitoreo | CloudWatch Alarms + SNS |
+
+## AWS Well-Architected
 
 | Pilar | Implementación |
 |-------|----------------|
-| **Cost Optimization** | S3 + CloudFront Free Tier: 1TB transfer/mes, 10M requests |
-| **Security** | HTTPS via CloudFront, S3 bucket privado, OAC |
-| **Reliability** | CloudFront 11 9s durability, multi-AZ automático |
-| **Performance** | Edge locations globales, cache optimizado |
-| **Operational Excellence** | CI/CD automatizado, zero manual deploys |
-| **Sustainability** | Serverless = recursos bajo demanda |
+| Cost Optimization | Free Tier, Budget alert $20/mes |
+| Security | HTTPS, S3 privado, OAC, IAM least privilege |
+| Reliability | CloudFront multi-AZ, S3 11 9s durability |
+| Performance | Edge locations globales, compresión |
+| Operational Excellence | CI/CD automatizado, alertas |
+| Sustainability | Serverless = recursos bajo demanda |
 
-## Costo Estimado
+## Infraestructura
 
-| Servicio | Free Tier | Costo Post-Free |
-|----------|-----------|-----------------|
-| S3 | 5GB storage | ~$0.023/GB |
-| CloudFront | 1TB/mes, 10M req | ~$0.085/GB |
-| **Total Mensual** | **$0.00** | <$1/mes típico |
+```
+infra/
+├── main.tf              # S3, CloudFront, IAM, Monitoring
+└── backend-setup/
+    └── main.tf          # S3 bucket + DynamoDB para tfstate
+```
 
-## Implementación
+### Recursos creados
 
-### Fase 1: Infraestructura AWS
-1. Crear S3 bucket (privado)
-2. Crear CloudFront distribution con OAC
-3. Configurar bucket policy para CloudFront
+- `portfolio-ffe-100ebd32` - S3 bucket (contenido)
+- `portfolio-ffe-tfstate` - S3 bucket (Terraform state)
+- `portfolio-tflock` - DynamoDB (state locking)
+- `E3F8OQJBJC6I35` - CloudFront distribution
+- `github-actions-portfolio` - IAM user (CI/CD)
+- CloudWatch Alarms (4xx, 5xx)
+- SNS Topic (alertas email)
+- Budget Alert ($20/mes)
 
-### Fase 2: CI/CD
-1. Crear IAM user para GitHub Actions
-2. Configurar secrets en GitHub
-3. Crear workflow de deploy
+## Monitoreo
 
-### Fase 3: DNS (Opcional)
-- Route 53 o DNS externo apuntando a CloudFront
+| Alerta | Condición |
+|--------|-----------|
+| 5xx Errors | > 5% en 5 min |
+| 4xx Errors | > 15% en 10 min |
+| Budget Forecast | > 80% de $20 |
+| Budget Actual | > 100% de $20 |
 
-## Secrets Requeridos en GitHub
+## CI/CD
+
+Push a `main` → Build → Deploy a S3 → Invalidar CloudFront
+
+### Secrets requeridos en GitHub
 
 ```
 AWS_ACCESS_KEY_ID
@@ -58,15 +82,27 @@ AWS_S3_BUCKET
 AWS_CLOUDFRONT_DISTRIBUTION_ID
 ```
 
-## Comandos de Deploy Manual (Referencia)
+## Desarrollo Local
 
 ```bash
-# Build
-npm run build
-
-# Sync to S3
-aws s3 sync dist/ s3://$BUCKET --delete
-
-# Invalidate cache
-aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # Genera dist/
 ```
+
+## Deploy Manual
+
+```bash
+npm run build
+aws s3 sync dist/ s3://portfolio-ffe-100ebd32 --delete
+aws cloudfront create-invalidation --distribution-id E3F8OQJBJC6I35 --paths "/*"
+```
+
+## Costos Estimados
+
+| Servicio | Free Tier | Post-Free |
+|----------|-----------|-----------|
+| S3 | 5GB | ~$0.023/GB |
+| CloudFront | 1TB/mes | ~$0.085/GB |
+| DynamoDB | 25GB | ~$0.25/GB |
+| **Total** | **$0.00** | **<$1/mes** |
